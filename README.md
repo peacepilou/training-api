@@ -6,7 +6,7 @@ Le projet Spring Boot d'entraînement du module Spring Boot : l'API de la boutiq
 
 - Le JDK 21 : dans ton terminal, `java -version` affiche `openjdk version "21…`.
 - IntelliJ IDEA.
-- Docker, pour MySQL (à partir du chapitre 03).
+- Docker, pour MySQL (à partir du chapitre 03) et MongoDB (à partir du chapitre 14).
 
 ## L'ouvrir
 
@@ -25,6 +25,14 @@ docker run -d --name training-api-mysql \
 Le lendemain, `docker start training-api-mysql` le relance avec ses données.
 
 Si le port 3306 est déjà pris sur ta machine, remplace `-p 3306:3306` par `-p 3307:3306`, puis mets `3307` dans l'URL de connexion (`application.properties` jusqu'au chapitre 07, `.env` ensuite).
+
+## Lancer MongoDB (à partir du chapitre 14)
+
+```bash
+docker run -d --name training-api-mongo -p 27017:27017 mongo:8
+```
+
+Puis, dans `.env` : `MONGODB_URI_DEV=mongodb://localhost:27017/eshop`. La base `eshop` et la collection `reviews` naissent au premier avis enregistré.
 
 ## Lancer l'appli
 
@@ -59,4 +67,5 @@ git switch chapitre-05
 | `chapitre-11` | Le code de sécurité fourni |
 | `chapitre-12` | Sécuriser les routes et s'authentifier |
 | `chapitre-13` | Tester son back |
-| `chapitre-14` | Bonus : optimisations et E2E |
+| `chapitre-14` | Composant d'accès NoSQL |
+| `chapitre-15` | Bonus : optimisations et E2E |

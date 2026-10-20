@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -112,6 +113,20 @@ class CandleFlowIntegrationTest {
                         .content(CANDLE.replace("48.00", "10000")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Le prix ne peut pas dépasser 9 999,99 €."));
+    }
+
+    @Test
+    void sqlInjectionInTheNameSearchFindsNothing() throws Exception {
+        mockMvc.perform(post("/candles")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CANDLE))
+                .andExpect(status().isCreated());
+
+        // Requête paramétrée : la saisie reste une valeur, cherchée telle quelle dans les noms
+        mockMvc.perform(get("/candles/search").param("keyword", "' OR '1'='1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test

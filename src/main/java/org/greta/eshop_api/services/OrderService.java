@@ -14,6 +14,7 @@ import org.greta.eshop_api.persistence.entities.OrderLineEntity;
 import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.greta.eshop_api.persistence.repositories.CustomerOrderRepository;
 import org.greta.eshop_api.persistence.repositories.CustomerRepository;
+import org.greta.eshop_api.security.Role;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +38,25 @@ public class OrderService {
         this.candleRepository = candleRepository;
     }
 
-    public List<String> findAllSummaries() {
-        List<CustomerOrderEntity> orders = orderRepository.findAllWithCustomerAndAddress();
+    // Camille (ADMIN) voit toutes les commandes, une cliente seulement les siennes
+    public List<String> findSummariesVisibleTo(CustomerEntity reader) {
+        if (reader.getRole() == Role.ADMIN) {
+            return toSummaries(orderRepository.findAllWithCustomerAndAddress());
+        }
+        return toSummaries(orderRepository.findByCustomerIdWithCustomerAndAddress(reader.getId()));
+    }
+
+    // La commande d'une autre cliente répond comme une commande qui n'existe pas : rien ne révèle qu'elle existe
+    @Transactional(readOnly = true)
+    public OrderResponseDTO findByIdVisibleTo(Integer id, CustomerEntity reader) {
+        CustomerOrderEntity order = orderRepository.findById(id).orElse(null);
+        if (order == null || (reader.getRole() != Role.ADMIN && !order.getCustomer().getId().equals(reader.getId()))) {
+            throw new ResourceNotFoundException("La commande " + id + " n'existe pas.");
+        }
+        return OrderMapper.toDto(order);
+    }
+
+    private List<String> toSummaries(List<CustomerOrderEntity> orders) {
         List<String> summaries = new ArrayList<>();
         for (CustomerOrderEntity order : orders) {
             String customerName = order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName();

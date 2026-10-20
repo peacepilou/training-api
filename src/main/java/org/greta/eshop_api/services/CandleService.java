@@ -1,5 +1,6 @@
 package org.greta.eshop_api.services;
 
+import org.greta.eshop_api.persistence.entities.CandleEntity;
 import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +13,13 @@ public class CandleService {
 
     public CandleService(CandleRepository candleRepository) {
         this.candleRepository = candleRepository;
-        System.out.println("CandleService construit");
     }
 
-    public List<String> findAll() {
+    public List<CandleEntity> findAll() {
         return candleRepository.findAll();
+    }
+
+    public List<CandleEntity> search(String keyword) {
+        return candleRepository.findByNameContainingIgnoreCase(keyword);
     }
 }

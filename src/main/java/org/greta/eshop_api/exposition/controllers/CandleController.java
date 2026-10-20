@@ -1,8 +1,10 @@
 package org.greta.eshop_api.exposition.controllers;
 
+import org.greta.eshop_api.persistence.entities.CandleEntity;
 import org.greta.eshop_api.services.CandleService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -15,11 +17,15 @@ public class CandleController {
 
     public CandleController(CandleService candleService) {
         this.candleService = candleService;
-        System.out.println("CandleController construit");
     }
 
     @GetMapping
-    public List<String> getAllCandles() {
+    public List<CandleEntity> getAllCandles() {
         return candleService.findAll();
+    }
+
+    @GetMapping("/search")
+    public List<CandleEntity> searchCandles(@RequestParam String keyword) {
+        return candleService.search(keyword);
     }
 }

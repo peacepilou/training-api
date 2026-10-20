@@ -1,12 +1,13 @@
 # training-api
 
-Le projet Spring Boot d'entraînement du module Spring Boot : l'API de la boutique de bougies de Camille (produits, clients, commandes). Chaque chapitre du cours a sa branche, et chaque branche part de la précédente.
+Le projet Spring Boot d'entraînement du module Spring Boot : l'API de la boutique de bougies de Camille (bougies, clientes, commandes). Elle travaille sur la base `candle_shop` de la semaine SQL. Chaque chapitre du cours a sa branche, et chaque branche part de la précédente.
 
 ## Ce qu'il te faut
 
 - Le JDK 21 : dans ton terminal, `java -version` affiche `openjdk version "21…`.
 - IntelliJ IDEA.
-- Docker, pour MySQL (à partir du chapitre 03) et MongoDB (à partir du chapitre 14).
+- Le MySQL 8.4 de la semaine SQL, avec le compte `candle_app` (à partir du chapitre 03).
+- Docker, pour MongoDB (à partir du chapitre 14) et pour le test de bout en bout (chapitre 15).
 
 ## L'ouvrir
 
@@ -14,17 +15,37 @@ Le projet Spring Boot d'entraînement du module Spring Boot : l'API de la boutiq
 2. Dans IntelliJ, clique sur **Open** et choisis le dossier qui contient `pom.xml`.
 3. Dans **File > Project Structure > Project**, choisis le JDK 21.
 
-## Lancer MySQL (à partir du chapitre 03)
+## Charger la base (à partir du chapitre 03)
+
+Spring Boot ne crée aucune table. Les tables viennent des scripts de la semaine SQL, recopiés dans `database/` : `schema.sql` (les 7 tables du MPD) et `seed.sql` (les données de la boutique). Au démarrage, Hibernate vérifie seulement que chaque entité colle à sa table (`spring.jpa.hibernate.ddl-auto=validate`) : s'il manque une colonne, l'appli refuse de démarrer.
+
+Dans un terminal ouvert à la racine du dépôt, dans cet ordre :
 
 ```bash
-docker run -d --name training-api-mysql \
-  -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=db_eshop \
-  -p 3306:3306 mysql:8.4
+mysql -u root -p < database/schema.sql
+mysql -u root -p < database/seed.sql
 ```
 
-Le lendemain, `docker start training-api-mysql` le relance avec ses données.
+À partir du chapitre 11, ajoute le script de la sécurité : il ajoute la colonne `role` et le compte de Camille.
 
-Si le port 3306 est déjà pris sur ta machine, remplace `-p 3306:3306` par `-p 3307:3306`, puis mets `3307` dans l'URL de connexion (`application.properties` jusqu'au chapitre 07, `.env` ensuite).
+```bash
+mysql -u root -p < database/security.sql
+```
+
+Sous Windows, PowerShell refuse le `<`. Écris à la place `mysql -u root -p -e "source database/schema.sql"`, et de même pour les autres.
+
+Pour repartir de zéro, rejoue les scripts dans le même ordre : `schema.sql` efface toute la base.
+
+## Le compte de l'application
+
+Le back ne se connecte pas avec `root`, mais avec `candle_app`, le compte limité à `SELECT, INSERT, UPDATE, DELETE` que tu as créé au chapitre SQL « Comptes et droits ». Il survit au `DROP DATABASE` de `schema.sql`. S'il n'existe pas sur ta machine, crée-le en `root` :
+
+```sql
+CREATE USER 'candle_app'@'%' IDENTIFIED BY 'bougie-2026';
+GRANT SELECT, INSERT, UPDATE, DELETE ON candle_shop.* TO 'candle_app'@'%';
+```
+
+`bougie-2026` est un mot de passe d'entraînement. Jusqu'au chapitre 07, il est écrit dans `application.properties` ; à partir du chapitre 08, il passe dans le `.env`, hors du dépôt.
 
 ## Lancer MongoDB (à partir du chapitre 14)
 
@@ -32,7 +53,7 @@ Si le port 3306 est déjà pris sur ta machine, remplace `-p 3306:3306` par `-p 
 docker run -d --name training-api-mongo -p 27017:27017 mongo:8
 ```
 
-Puis, dans `.env` : `MONGODB_URI_DEV=mongodb://localhost:27017/eshop`. La base `eshop` et la collection `reviews` naissent au premier avis enregistré.
+Puis, dans `.env` : `MONGODB_URI_DEV=mongodb://localhost:27017/candle_shop`. La base `candle_shop` de MongoDB et la collection `search_logs` naissent à la première recherche enregistrée.
 
 ## Lancer l'appli
 
@@ -42,7 +63,7 @@ Puis, dans `.env` : `MONGODB_URI_DEV=mongodb://localhost:27017/eshop`. La base `
 
 L'API répond sur `http://localhost:8080`. Pour l'arrêter : `Ctrl + C`.
 
-Les tests : `./mvnw verify`. Jusqu'au chapitre 12, ce test démarre toute l'application, donc MySQL doit tourner.
+Les tests : `./mvnw verify`. Du chapitre 03 au chapitre 12, ce test démarre toute l'application : MySQL doit tourner, avec la base chargée. Au chapitre 15, le test de bout en bout a besoin de Docker.
 
 À partir du chapitre 08, copie `.env.sample` en `.env` et remplis-le avant de lancer quoi que ce soit.
 

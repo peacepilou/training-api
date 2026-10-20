@@ -3,9 +3,11 @@ package org.greta.eshop_api.exposition.controllers;
 import jakarta.validation.Valid;
 import org.greta.eshop_api.exposition.dtos.OrderRequestDTO;
 import org.greta.eshop_api.exposition.dtos.OrderResponseDTO;
+import org.greta.eshop_api.persistence.entities.CustomerEntity;
 import org.greta.eshop_api.services.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,8 +32,10 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderRequestDTO request) {
-        OrderResponseDTO created = orderService.create(request);
+    public ResponseEntity<OrderResponseDTO> createOrder(@AuthenticationPrincipal CustomerEntity customer,
+                                                        @Valid @RequestBody OrderRequestDTO request) {
+        // La cliente vient du jeton, jamais du corps : personne ne commande au nom d'une autre
+        OrderResponseDTO created = orderService.create(customer.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }

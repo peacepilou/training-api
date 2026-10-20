@@ -50,9 +50,9 @@ public class OrderService {
 
     // Tout ou rien : une exception non vérifiée annule chaque écriture faite ici
     @Transactional
-    public OrderResponseDTO create(OrderRequestDTO dto) {
-        CustomerEntity customer = customerRepository.findById(dto.customerId())
-                .orElseThrow(() -> new ResourceNotFoundException("La cliente " + dto.customerId() + " n'existe pas."));
+    public OrderResponseDTO create(Integer customerId, OrderRequestDTO dto) {
+        CustomerEntity customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("La cliente " + customerId + " n'existe pas."));
 
         CustomerOrderEntity order = new CustomerOrderEntity();
         order.setCustomer(customer);

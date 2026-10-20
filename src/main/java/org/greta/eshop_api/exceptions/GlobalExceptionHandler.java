@@ -2,6 +2,7 @@ package org.greta.eshop_api.exceptions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -66,6 +67,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Identifiants incorrects."));
+    }
+
+    // Une base injoignable : le message d'origine contient l'hôte et le port, il reste dans les logs
+    @ExceptionHandler(DataAccessResourceFailureException.class)
+    public ResponseEntity<ErrorResponse> handleDatabaseDown(DataAccessResourceFailureException ex) {
+        log.error("Base de données injoignable", ex);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ErrorResponse("Service momentanément indisponible."));
     }
 
     // Les handlers ci-dessus doivent rester : sans eux, ce filet transforme aussi un 400, un 404 ou un 405 en 500.

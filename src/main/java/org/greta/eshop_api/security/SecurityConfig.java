@@ -46,6 +46,7 @@ public class SecurityConfig {
                 // Spring prend la première règle qui correspond : la plus précise d'abord
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/candles/**").permitAll()
                         .requestMatchers("/candles/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")

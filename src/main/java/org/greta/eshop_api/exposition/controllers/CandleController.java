@@ -2,6 +2,7 @@ package org.greta.eshop_api.exposition.controllers;
 
 import org.greta.eshop_api.exposition.dtos.CandleRequestDTO;
 import org.greta.eshop_api.exposition.dtos.CandleResponseDTO;
+import jakarta.validation.Valid;
 import org.greta.eshop_api.services.CandleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,13 +57,13 @@ public class CandleController {
     }
 
     @PostMapping
-    public ResponseEntity<CandleResponseDTO> createCandle(@RequestBody CandleRequestDTO request) {
+    public ResponseEntity<CandleResponseDTO> createCandle(@Valid @RequestBody CandleRequestDTO request) {
         CandleResponseDTO saved = candleService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CandleResponseDTO> updateCandle(@PathVariable Integer id, @RequestBody CandleRequestDTO request) {
+    public ResponseEntity<CandleResponseDTO> updateCandle(@PathVariable Integer id, @Valid @RequestBody CandleRequestDTO request) {
         CandleResponseDTO updated = candleService.update(id, request);
         if (updated == null) {
             return ResponseEntity.notFound().build();

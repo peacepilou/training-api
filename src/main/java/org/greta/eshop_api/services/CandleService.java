@@ -20,27 +20,59 @@ public class CandleService {
         this.candleRepository = candleRepository;
     }
 
+    /**
+     * Renvoie toutes les bougies du catalogue.
+     * @return toutes les bougies
+     */
     public List<CandleEntity> findAll() {
         return candleRepository.findAll();
     }
 
+    /**
+     * Renvoie une bougie.
+     * @param id l'id de la bougie
+     * @return la bougie, ou null si elle n'existe pas
+     */
     public CandleEntity findById(Integer id) {
         return candleRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Cherche les bougies dont le nom contient ce mot, majuscules ignorées.
+     * @param keyword le mot cherché
+     * @return les bougies trouvées, éventuellement aucune
+     */
     public List<CandleEntity> search(String keyword) {
         return candleRepository.findByNameContainingIgnoreCase(keyword);
     }
 
+    /**
+     * Cherche les bougies qui coûtent ce prix ou moins.
+     * @param price le prix maximum
+     * @return les bougies trouvées, éventuellement aucune
+     */
     public List<CandleEntity> findByMaxPrice(BigDecimal price) {
         return candleRepository.findByPriceLessThanEqual(price);
     }
 
+    /**
+     * Enregistre une nouvelle bougie, après les règles métier.
+     * @param candle la bougie à créer
+     * @return la bougie enregistrée, avec son id
+     * @throws org.greta.eshop_api.exceptions.BusinessRuleException si une règle métier est violée
+     */
     public CandleEntity create(CandleEntity candle) {
         checkBusinessRules(candle);
         return candleRepository.save(candle);
     }
 
+    /**
+     * Remplace les champs d'une bougie, après les règles métier.
+     * @param id l'id de la bougie
+     * @param newData les nouvelles valeurs
+     * @return la bougie modifiée, ou null si elle n'existe pas
+     * @throws org.greta.eshop_api.exceptions.BusinessRuleException si une règle métier est violée
+     */
     public CandleEntity update(Integer id, CandleEntity newData) {
         CandleEntity existing = candleRepository.findById(id).orElse(null);
         if (existing == null) {
@@ -56,6 +88,11 @@ public class CandleService {
         return candleRepository.save(existing);
     }
 
+    /**
+     * Supprime une bougie.
+     * @param id l'id de la bougie
+     * @return false si elle n'existe pas
+     */
     public boolean delete(Integer id) {
         if (!candleRepository.existsById(id)) {
             return false;

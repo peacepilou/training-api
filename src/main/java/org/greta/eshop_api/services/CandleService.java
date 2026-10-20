@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CandleService {
@@ -20,9 +21,11 @@ public class CandleService {
     private static final BigDecimal MAX_PRICE = new BigDecimal("9999.99");
 
     private final CandleRepository candleRepository;
+    private final SearchLogService searchLogService;
 
-    public CandleService(CandleRepository candleRepository) {
+    public CandleService(CandleRepository candleRepository, SearchLogService searchLogService) {
         this.candleRepository = candleRepository;
+        this.searchLogService = searchLogService;
     }
 
     /**
@@ -45,21 +48,25 @@ public class CandleService {
     }
 
     /**
-     * Cherche les bougies dont le nom contient ce mot, majuscules ignorées.
+     * Cherche les bougies dont le nom contient ce mot, majuscules ignorées, et journalise la recherche.
      * @param keyword le mot cherché
      * @return les bougies trouvées, éventuellement aucune
      */
     public List<CandleResponseDTO> search(String keyword) {
-        return toDtos(candleRepository.findByNameContainingIgnoreCase(keyword));
+        List<CandleResponseDTO> results = toDtos(candleRepository.findByNameContainingIgnoreCase(keyword));
+        searchLogService.record(Map.of("keyword", keyword), results.size());
+        return results;
     }
 
     /**
-     * Cherche les bougies qui coûtent ce prix ou moins.
+     * Cherche les bougies qui coûtent ce prix ou moins, et journalise la recherche.
      * @param price le prix maximum
      * @return les bougies trouvées, éventuellement aucune
      */
     public List<CandleResponseDTO> findByMaxPrice(BigDecimal price) {
-        return toDtos(candleRepository.findByPriceLessThanEqual(price));
+        List<CandleResponseDTO> results = toDtos(candleRepository.findByPriceLessThanEqual(price));
+        searchLogService.record(Map.of("maxPrice", price), results.size());
+        return results;
     }
 
     /**

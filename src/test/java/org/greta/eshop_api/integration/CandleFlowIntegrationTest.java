@@ -5,6 +5,7 @@ import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.greta.eshop_api.persistence.repositories.CustomerRepository;
 import org.greta.eshop_api.security.JwtService;
 import org.greta.eshop_api.security.Role;
+import org.greta.eshop_api.services.SearchLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -48,6 +50,10 @@ class CandleFlowIntegrationTest {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtService jwtService;
+
+    // Le journal des recherches n'est pas l'objet de ce test : sans MongoDB, chaque recherche attendrait 30 s
+    @MockitoBean
+    private SearchLogService searchLogService;
 
     private String adminToken;
 

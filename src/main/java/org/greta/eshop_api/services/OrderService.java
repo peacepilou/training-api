@@ -71,12 +71,11 @@ public class OrderService {
                 throw new BusinessRuleException("La bougie " + candle.getName() + " n'est pas en vente.");
             }
 
-            if (candle.getStock() < lineDto.quantity()) {
+            int updatedRows = candleRepository.decrementStock(candle.getId(), lineDto.quantity());
+            if (updatedRows == 0) {
                 throw new BusinessRuleException("Stock insuffisant pour " + candle.getName()
-                        + " : " + candle.getStock() + " en stock, " + lineDto.quantity() + " demandées.");
+                        + " (quantité demandée : " + lineDto.quantity() + ").");
             }
-            candle.setStock(candle.getStock() - lineDto.quantity());
-            candleRepository.save(candle);
 
             OrderLineEntity line = new OrderLineEntity();
             line.setOrder(order);

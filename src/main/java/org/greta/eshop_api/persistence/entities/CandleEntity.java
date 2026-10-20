@@ -2,9 +2,6 @@ package org.greta.eshop_api.persistence.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,12 +16,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Getter
 @Setter
-public class CandleEntity {
-
-    // INT dans schema.sql : Integer côté Java
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class CandleEntity extends BaseEntity {
 
     @Column(nullable = false, length = 80)
     private String name;

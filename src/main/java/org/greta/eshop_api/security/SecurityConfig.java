@@ -47,6 +47,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/candles/**").permitAll()
+                        // Avant la règle ADMIN des bougies, qui l'avalerait : une cliente dépose son avis
+                        .requestMatchers(HttpMethod.POST, "/candles/{candleId}/reviews").hasRole("USER")
                         .requestMatchers("/candles/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")

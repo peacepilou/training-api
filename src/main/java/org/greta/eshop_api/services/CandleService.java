@@ -1,9 +1,11 @@
 package org.greta.eshop_api.services;
 
 import org.greta.eshop_api.persistence.repositories.CandleRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class CandleService {
 
     private final CandleRepository candleRepository;

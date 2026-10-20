@@ -1,7 +1,10 @@
 package org.greta.eshop_api.persistence.repositories;
 
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
+@Repository
 public class CandleRepository {
 
     // Catalogue en mémoire : la base de données arrive au chapitre 03

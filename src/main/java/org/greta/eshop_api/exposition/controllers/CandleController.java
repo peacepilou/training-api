@@ -1,6 +1,5 @@
 package org.greta.eshop_api.exposition.controllers;
 
-import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.greta.eshop_api.services.CandleService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,8 +13,8 @@ public class CandleController {
 
     private final CandleService candleService;
 
-    public CandleController() {
-        this.candleService = new CandleService(new CandleRepository());
+    public CandleController(CandleService candleService) {
+        this.candleService = candleService;
         System.out.println("CandleController construit");
     }
 

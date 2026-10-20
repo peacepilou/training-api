@@ -1,6 +1,7 @@
 package org.greta.eshop_api.services;
 
 import org.greta.eshop_api.exceptions.BusinessRuleException;
+import org.greta.eshop_api.exceptions.ResourceNotFoundException;
 import org.greta.eshop_api.exposition.dtos.CandleRequestDTO;
 import org.greta.eshop_api.exposition.dtos.CandleResponseDTO;
 import org.greta.eshop_api.mappers.CandleMapper;
@@ -35,13 +36,11 @@ public class CandleService {
     /**
      * Renvoie une bougie.
      * @param id l'id de la bougie
-     * @return la bougie, ou null si elle n'existe pas
+     * @return la bougie
+     * @throws org.greta.eshop_api.exceptions.ResourceNotFoundException si elle n'existe pas
      */
     public CandleResponseDTO findById(Integer id) {
-        CandleEntity candle = candleRepository.findById(id).orElse(null);
-        if (candle == null) {
-            return null;
-        }
+        CandleEntity candle = findExisting(id);
         return CandleMapper.toDto(candle);
     }
 
@@ -80,13 +79,12 @@ public class CandleService {
      * Remplace les champs d'une bougie, après les règles métier.
      * @param id l'id de la bougie
      * @param dto les nouvelles valeurs
-     * @return la bougie modifiée, ou null si elle n'existe pas
+     * @return la bougie modifiée
      * @throws org.greta.eshop_api.exceptions.BusinessRuleException si une règle métier est violée
+     * @throws org.greta.eshop_api.exceptions.ResourceNotFoundException si elle n'existe pas
      */
     public CandleResponseDTO update(Integer id, CandleRequestDTO dto) {
-        if (!candleRepository.existsById(id)) {
-            return null;
-        }
+        findExisting(id);
         CandleEntity candle = CandleMapper.toEntity(dto);
         // L'id du chemin : save fait un UPDATE au lieu d'un INSERT
         candle.setId(id);
@@ -98,14 +96,18 @@ public class CandleService {
     /**
      * Supprime une bougie.
      * @param id l'id de la bougie
-     * @return false si elle n'existe pas
+     * @throws org.greta.eshop_api.exceptions.ResourceNotFoundException si elle n'existe pas
      */
-    public boolean delete(Integer id) {
+    public void delete(Integer id) {
         if (!candleRepository.existsById(id)) {
-            return false;
+            throw new ResourceNotFoundException("Impossible de supprimer : la bougie " + id + " n'existe pas.");
         }
         candleRepository.deleteById(id);
-        return true;
+    }
+
+    private CandleEntity findExisting(Integer id) {
+        return candleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("La bougie " + id + " n'existe pas."));
     }
 
     private List<CandleResponseDTO> toDtos(List<CandleEntity> candles) {

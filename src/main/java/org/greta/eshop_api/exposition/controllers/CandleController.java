@@ -38,9 +38,6 @@ public class CandleController {
     @GetMapping("/{id}")
     public ResponseEntity<CandleResponseDTO> getCandleById(@PathVariable Integer id) {
         CandleResponseDTO candle = candleService.findById(id);
-        if (candle == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(candle);
     }
 
@@ -65,17 +62,12 @@ public class CandleController {
     @PutMapping("/{id}")
     public ResponseEntity<CandleResponseDTO> updateCandle(@PathVariable Integer id, @Valid @RequestBody CandleRequestDTO request) {
         CandleResponseDTO updated = candleService.update(id, request);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCandle(@PathVariable Integer id) {
-        if (!candleService.delete(id)) {
-            return ResponseEntity.notFound().build();
-        }
+        candleService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

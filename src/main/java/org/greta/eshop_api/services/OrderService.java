@@ -15,6 +15,7 @@ import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.greta.eshop_api.persistence.repositories.CustomerOrderRepository;
 import org.greta.eshop_api.persistence.repositories.CustomerRepository;
 import org.greta.eshop_api.security.Role;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,8 +67,10 @@ public class OrderService {
         return summaries;
     }
 
-    // Tout ou rien : une exception non vérifiée annule chaque écriture faite ici
+    // Tout ou rien : une exception non vérifiée annule chaque écriture faite ici.
+    // La commande baisse des stocks : les bougies gardées en cache ne sont plus à jour
     @Transactional
+    @CacheEvict(value = "candles", allEntries = true)
     public OrderResponseDTO create(Integer customerId, OrderRequestDTO dto) {
         CustomerEntity customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("La cliente " + customerId + " n'existe pas."));

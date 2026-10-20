@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -27,5 +28,10 @@ public class CandleController {
     @GetMapping("/search")
     public List<CandleEntity> searchCandles(@RequestParam String keyword) {
         return candleService.search(keyword);
+    }
+
+    @GetMapping("/max-price")
+    public List<CandleEntity> getCandlesByMaxPrice(@RequestParam BigDecimal price) {
+        return candleService.findByMaxPrice(price);
     }
 }

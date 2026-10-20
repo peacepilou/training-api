@@ -4,9 +4,13 @@ import org.greta.eshop_api.exceptions.BusinessRuleException;
 import org.greta.eshop_api.exceptions.ResourceNotFoundException;
 import org.greta.eshop_api.exposition.dtos.CandleRequestDTO;
 import org.greta.eshop_api.exposition.dtos.CandleResponseDTO;
+import org.greta.eshop_api.exposition.dtos.PageResponseDTO;
 import org.greta.eshop_api.mappers.CandleMapper;
 import org.greta.eshop_api.persistence.entities.CandleEntity;
 import org.greta.eshop_api.persistence.repositories.CandleRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,11 +33,24 @@ public class CandleService {
     }
 
     /**
-     * Renvoie toutes les bougies du catalogue.
-     * @return toutes les bougies
+     * Renvoie une page du catalogue, triée.
+     * @param page le numéro de la page, à partir de 0
+     * @param size le nombre de bougies par page
+     * @param sortBy le champ de tri, par exemple price
+     * @param direction asc ou desc
+     * @return les bougies de la page et le total
      */
-    public List<CandleResponseDTO> findAll() {
-        return toDtos(candleRepository.findAll());
+    // findAll(Pageable) vient de JpaRepository : rien à déclarer dans CandleRepository
+    public PageResponseDTO<CandleResponseDTO> findPage(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Page<CandleEntity> result = candleRepository.findAll(PageRequest.of(page, size, sort));
+        return new PageResponseDTO<>(
+                toDtos(result.getContent()),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages()
+        );
     }
 
     /**

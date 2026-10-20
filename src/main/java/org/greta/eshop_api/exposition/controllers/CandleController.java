@@ -1,6 +1,7 @@
 package org.greta.eshop_api.exposition.controllers;
 
 import org.greta.eshop_api.exposition.dtos.CandleRequestDTO;
+import org.greta.eshop_api.exposition.dtos.PageResponseDTO;
 import org.greta.eshop_api.exposition.dtos.CandleResponseDTO;
 import jakarta.validation.Valid;
 import org.greta.eshop_api.services.CandleService;
@@ -29,9 +30,14 @@ public class CandleController {
         this.candleService = candleService;
     }
 
+    // Exemple : /candles?page=0&size=5&sortBy=price&direction=desc
     @GetMapping
-    public ResponseEntity<List<CandleResponseDTO>> getAllCandles() {
-        List<CandleResponseDTO> candles = candleService.findAll();
+    public ResponseEntity<PageResponseDTO<CandleResponseDTO>> getCandles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+        PageResponseDTO<CandleResponseDTO> candles = candleService.findPage(page, size, sortBy, direction);
         return ResponseEntity.ok(candles);
     }
 

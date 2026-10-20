@@ -15,6 +15,7 @@ import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.greta.eshop_api.persistence.repositories.CustomerOrderRepository;
 import org.greta.eshop_api.persistence.repositories.CustomerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,6 +48,8 @@ public class OrderService {
         return summaries;
     }
 
+    // Tout ou rien : une exception non vérifiée annule chaque écriture faite ici
+    @Transactional
     public OrderResponseDTO create(OrderRequestDTO dto) {
         CustomerEntity customer = customerRepository.findById(dto.customerId())
                 .orElseThrow(() -> new ResourceNotFoundException("La cliente " + dto.customerId() + " n'existe pas."));

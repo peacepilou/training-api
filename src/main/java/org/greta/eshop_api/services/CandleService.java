@@ -1,11 +1,15 @@
 package org.greta.eshop_api.services;
 
 import org.greta.eshop_api.exceptions.BusinessRuleException;
+import org.greta.eshop_api.exposition.dtos.CandleRequestDTO;
+import org.greta.eshop_api.exposition.dtos.CandleResponseDTO;
+import org.greta.eshop_api.mappers.CandleMapper;
 import org.greta.eshop_api.persistence.entities.CandleEntity;
 import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,8 +28,8 @@ public class CandleService {
      * Renvoie toutes les bougies du catalogue.
      * @return toutes les bougies
      */
-    public List<CandleEntity> findAll() {
-        return candleRepository.findAll();
+    public List<CandleResponseDTO> findAll() {
+        return toDtos(candleRepository.findAll());
     }
 
     /**
@@ -33,8 +37,12 @@ public class CandleService {
      * @param id l'id de la bougie
      * @return la bougie, ou null si elle n'existe pas
      */
-    public CandleEntity findById(Integer id) {
-        return candleRepository.findById(id).orElse(null);
+    public CandleResponseDTO findById(Integer id) {
+        CandleEntity candle = candleRepository.findById(id).orElse(null);
+        if (candle == null) {
+            return null;
+        }
+        return CandleMapper.toDto(candle);
     }
 
     /**
@@ -42,8 +50,8 @@ public class CandleService {
      * @param keyword le mot cherché
      * @return les bougies trouvées, éventuellement aucune
      */
-    public List<CandleEntity> search(String keyword) {
-        return candleRepository.findByNameContainingIgnoreCase(keyword);
+    public List<CandleResponseDTO> search(String keyword) {
+        return toDtos(candleRepository.findByNameContainingIgnoreCase(keyword));
     }
 
     /**
@@ -51,41 +59,40 @@ public class CandleService {
      * @param price le prix maximum
      * @return les bougies trouvées, éventuellement aucune
      */
-    public List<CandleEntity> findByMaxPrice(BigDecimal price) {
-        return candleRepository.findByPriceLessThanEqual(price);
+    public List<CandleResponseDTO> findByMaxPrice(BigDecimal price) {
+        return toDtos(candleRepository.findByPriceLessThanEqual(price));
     }
 
     /**
      * Enregistre une nouvelle bougie, après les règles métier.
-     * @param candle la bougie à créer
+     * @param dto la bougie à créer
      * @return la bougie enregistrée, avec son id
      * @throws org.greta.eshop_api.exceptions.BusinessRuleException si une règle métier est violée
      */
-    public CandleEntity create(CandleEntity candle) {
+    public CandleResponseDTO create(CandleRequestDTO dto) {
+        CandleEntity candle = CandleMapper.toEntity(dto);
         checkBusinessRules(candle);
-        return candleRepository.save(candle);
+        CandleEntity saved = candleRepository.save(candle);
+        return CandleMapper.toDto(saved);
     }
 
     /**
      * Remplace les champs d'une bougie, après les règles métier.
      * @param id l'id de la bougie
-     * @param newData les nouvelles valeurs
+     * @param dto les nouvelles valeurs
      * @return la bougie modifiée, ou null si elle n'existe pas
      * @throws org.greta.eshop_api.exceptions.BusinessRuleException si une règle métier est violée
      */
-    public CandleEntity update(Integer id, CandleEntity newData) {
-        CandleEntity existing = candleRepository.findById(id).orElse(null);
-        if (existing == null) {
+    public CandleResponseDTO update(Integer id, CandleRequestDTO dto) {
+        if (!candleRepository.existsById(id)) {
             return null;
         }
-        existing.setName(newData.getName());
-        existing.setScent(newData.getScent());
-        existing.setSize(newData.getSize());
-        existing.setPrice(newData.getPrice());
-        existing.setStock(newData.getStock());
-        existing.setOnSale(newData.isOnSale());
-        checkBusinessRules(existing);
-        return candleRepository.save(existing);
+        CandleEntity candle = CandleMapper.toEntity(dto);
+        // L'id du chemin : save fait un UPDATE au lieu d'un INSERT
+        candle.setId(id);
+        checkBusinessRules(candle);
+        CandleEntity saved = candleRepository.save(candle);
+        return CandleMapper.toDto(saved);
     }
 
     /**
@@ -99,6 +106,14 @@ public class CandleService {
         }
         candleRepository.deleteById(id);
         return true;
+    }
+
+    private List<CandleResponseDTO> toDtos(List<CandleEntity> candles) {
+        List<CandleResponseDTO> dtos = new ArrayList<>();
+        for (CandleEntity candle : candles) {
+            dtos.add(CandleMapper.toDto(candle));
+        }
+        return dtos;
     }
 
     private void checkBusinessRules(CandleEntity candle) {

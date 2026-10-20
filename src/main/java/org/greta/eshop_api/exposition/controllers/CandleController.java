@@ -1,6 +1,7 @@
 package org.greta.eshop_api.exposition.controllers;
 
-import org.greta.eshop_api.persistence.entities.CandleEntity;
+import org.greta.eshop_api.exposition.dtos.CandleRequestDTO;
+import org.greta.eshop_api.exposition.dtos.CandleResponseDTO;
 import org.greta.eshop_api.services.CandleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +29,14 @@ public class CandleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CandleEntity>> getAllCandles() {
-        List<CandleEntity> candles = candleService.findAll();
+    public ResponseEntity<List<CandleResponseDTO>> getAllCandles() {
+        List<CandleResponseDTO> candles = candleService.findAll();
         return ResponseEntity.ok(candles);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CandleEntity> getCandleById(@PathVariable Integer id) {
-        CandleEntity candle = candleService.findById(id);
+    public ResponseEntity<CandleResponseDTO> getCandleById(@PathVariable Integer id) {
+        CandleResponseDTO candle = candleService.findById(id);
         if (candle == null) {
             return ResponseEntity.notFound().build();
         }
@@ -43,26 +44,26 @@ public class CandleController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<CandleEntity>> searchCandles(@RequestParam String keyword) {
-        List<CandleEntity> candles = candleService.search(keyword);
+    public ResponseEntity<List<CandleResponseDTO>> searchCandles(@RequestParam String keyword) {
+        List<CandleResponseDTO> candles = candleService.search(keyword);
         return ResponseEntity.ok(candles);
     }
 
     @GetMapping("/max-price")
-    public ResponseEntity<List<CandleEntity>> getCandlesByMaxPrice(@RequestParam BigDecimal price) {
-        List<CandleEntity> candles = candleService.findByMaxPrice(price);
+    public ResponseEntity<List<CandleResponseDTO>> getCandlesByMaxPrice(@RequestParam BigDecimal price) {
+        List<CandleResponseDTO> candles = candleService.findByMaxPrice(price);
         return ResponseEntity.ok(candles);
     }
 
     @PostMapping
-    public ResponseEntity<CandleEntity> createCandle(@RequestBody CandleEntity candle) {
-        CandleEntity saved = candleService.create(candle);
+    public ResponseEntity<CandleResponseDTO> createCandle(@RequestBody CandleRequestDTO request) {
+        CandleResponseDTO saved = candleService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CandleEntity> updateCandle(@PathVariable Integer id, @RequestBody CandleEntity newData) {
-        CandleEntity updated = candleService.update(id, newData);
+    public ResponseEntity<CandleResponseDTO> updateCandle(@PathVariable Integer id, @RequestBody CandleRequestDTO request) {
+        CandleResponseDTO updated = candleService.update(id, request);
         if (updated == null) {
             return ResponseEntity.notFound().build();
         }

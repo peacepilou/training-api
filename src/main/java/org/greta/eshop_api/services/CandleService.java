@@ -8,6 +8,8 @@ import org.greta.eshop_api.exposition.dtos.PageResponseDTO;
 import org.greta.eshop_api.mappers.CandleMapper;
 import org.greta.eshop_api.persistence.entities.CandleEntity;
 import org.greta.eshop_api.persistence.repositories.CandleRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -59,6 +61,8 @@ public class CandleService {
      * @return la bougie
      * @throws org.greta.eshop_api.exceptions.ResourceNotFoundException si elle n'existe pas
      */
+    // Le premier appel lit la base, les suivants renvoient la copie gardée en mémoire sous la clé id
+    @Cacheable("candles")
     public CandleResponseDTO findById(Integer id) {
         CandleEntity candle = findExisting(id);
         return CandleMapper.toDto(candle);
@@ -107,6 +111,7 @@ public class CandleService {
      * @throws org.greta.eshop_api.exceptions.BusinessRuleException si une règle métier est violée
      * @throws org.greta.eshop_api.exceptions.ResourceNotFoundException si elle n'existe pas
      */
+    @CacheEvict(value = "candles", key = "#id")
     public CandleResponseDTO update(Integer id, CandleRequestDTO dto) {
         findExisting(id);
         CandleEntity candle = CandleMapper.toEntity(dto);
@@ -122,6 +127,7 @@ public class CandleService {
      * @param id l'id de la bougie
      * @throws org.greta.eshop_api.exceptions.ResourceNotFoundException si elle n'existe pas
      */
+    @CacheEvict(value = "candles", key = "#id")
     public void delete(Integer id) {
         if (!candleRepository.existsById(id)) {
             throw new ResourceNotFoundException("Impossible de supprimer : la bougie " + id + " n'existe pas.");

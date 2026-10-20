@@ -1,0 +1,8 @@
+# Dependabot ouvre une pull request quand une dépendance du pom.xml a une nouvelle version,
+# avec ses notes de sécurité : JJWT, Spring Boot et le reste ne vieillissent plus en silence
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"

@@ -17,7 +17,7 @@ public class OrderService {
     }
 
     public List<String> findAllSummaries() {
-        List<CustomerOrderEntity> orders = orderRepository.findAllWithCustomer();
+        List<CustomerOrderEntity> orders = orderRepository.findAllWithCustomerAndAddress();
         List<String> summaries = new ArrayList<>();
         for (CustomerOrderEntity order : orders) {
             String customerName = order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName();

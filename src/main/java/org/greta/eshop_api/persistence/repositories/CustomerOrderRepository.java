@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrderEntity, Integer> {
 
-    @Query("SELECT o FROM CustomerOrderEntity o JOIN FETCH o.customer")
-    List<CustomerOrderEntity> findAllWithCustomer();
+    // LEFT : une commande retirée à l'atelier n'a pas d'adresse, un JOIN simple l'écarterait de la liste
+    @Query("SELECT o FROM CustomerOrderEntity o JOIN FETCH o.customer LEFT JOIN FETCH o.address")
+    List<CustomerOrderEntity> findAllWithCustomerAndAddress();
 }

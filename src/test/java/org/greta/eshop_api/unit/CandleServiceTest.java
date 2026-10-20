@@ -7,6 +7,7 @@ import org.greta.eshop_api.exposition.dtos.CandleResponseDTO;
 import org.greta.eshop_api.persistence.entities.CandleEntity;
 import org.greta.eshop_api.persistence.repositories.CandleRepository;
 import org.greta.eshop_api.services.CandleService;
+import org.greta.eshop_api.services.SearchLogService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,9 @@ class CandleServiceTest {
 
     @Mock
     private CandleRepository candleRepository;
+
+    @Mock
+    private SearchLogService searchLogService;
 
     @InjectMocks
     private CandleService candleService;

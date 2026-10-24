@@ -1,0 +1,58 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_USER_DEV: ${DB_USER_DEV}
+      DB_PASSWORD_DEV: ${DB_PASSWORD_DEV}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Joués par ordre alphabétique, une seule fois, quand mysql_data est encore vide
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./database/security.sql:/docker-entrypoint-initdb.d/03-security.sql:ro
+      - ./docker/mysql/candle-app-user.sh:/docker-entrypoint-initdb.d/04-candle-app-user.sh:ro
+    healthcheck:
+      # 127.0.0.1 et pas localhost : pendant le chargement des scripts, MySQL n'écoute que sur son socket local
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo:
+    image: mongo:8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_APP_USER: ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo/candle-app-user.sh:/docker-entrypoint-initdb.d/candle-app-user.sh:ro
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    environment:
+      # Dans le réseau de Compose, chaque service se joint par son nom : mysql, mongo
+      DB_HOST_DEV: mysql
+      DB_PORT_DEV: 3306
+      DB_NAME_DEV: ${DB_NAME_DEV}
+      DB_USER_DEV: ${DB_USER_DEV}
+      DB_PASSWORD_DEV: ${DB_PASSWORD_DEV}
+      MONGODB_URI_DEV: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/candle_shop
+      CLIENT_URL_DEV: ${CLIENT_URL_DEV}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+
+volumes:
+  mysql_data:
+  mongo_data:

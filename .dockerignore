@@ -1,0 +1,7 @@
+# Lu à la racine du contexte de build (le « . » de docker build), pas à côté du Dockerfile
+target/
+.git
+.gitignore
+*.log
+.idea/
+.env

@@ -1,2 +1,5 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+# Lus par Linux dans les conteneurs : des fins de ligne Windows les casseraient
+*.sh text eol=lf
+*.sql text eol=lf

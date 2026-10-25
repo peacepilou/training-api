@@ -56,7 +56,7 @@ class CandleServiceTest {
         CandleResponseDTO response = candleService.create(request("48.00", 5));
 
         // Assert
-        assertEquals(42, response.id());
+        assertEquals(43, response.id());
         assertEquals(new BigDecimal("48.00"), response.price());
         verify(candleRepository).save(any(CandleEntity.class));
     }

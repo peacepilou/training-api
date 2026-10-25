@@ -14,7 +14,7 @@ public class CandleMapper {
         entity.setPrice(dto.price());
         entity.setStock(dto.stock());
         // En vente par défaut, comme le DEFAULT TRUE de la colonne on_sale
-        entity.setOnSale(dto.onSale() != null ? dto.onSale() : true);
+        entity.setOnSale(dto.onSale() == null || dto.onSale());
         return entity;
     }
 

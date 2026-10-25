@@ -189,6 +189,15 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.28.0</version>
+				<configuration>
+					<!-- affiche chaque violation dans la console, pas seulement dans target/pmd.xml -->
+					<printFailingErrors>true</printFailingErrors>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

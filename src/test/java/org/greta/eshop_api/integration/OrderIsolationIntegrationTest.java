@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// Léa Garnier et Hugo Lefebvre, deux clientes de seed.sql : chacun ses commandes
+// Inès Moreau et Lucas Bernard, deux clients de seed.sql : chacun ses commandes
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
@@ -47,10 +47,10 @@ class OrderIsolationIntegrationTest {
     @Autowired
     private JwtService jwtService;
 
-    private CustomerEntity lea;
-    private CustomerEntity hugo;
-    private String leaToken;
-    private Integer hugoOrderId;
+    private CustomerEntity ines;
+    private CustomerEntity lucas;
+    private String inesToken;
+    private Integer lucasOrderId;
     private Integer candleId;
 
     @BeforeEach
@@ -59,9 +59,9 @@ class OrderIsolationIntegrationTest {
         candleRepository.deleteAll();
         customerRepository.deleteAll();
 
-        lea = customerRepository.save(customer("lea.garnier@laposte.net", "Léa", "Garnier"));
-        hugo = customerRepository.save(customer("hugo.lefebvre@gmail.com", "Hugo", "Lefebvre"));
-        leaToken = jwtService.generateToken(lea);
+        ines = customerRepository.save(customer("ines.moreau@gmail.com", "Inès", "Moreau"));
+        lucas = customerRepository.save(customer("lucas.bernard@orange.fr", "Lucas", "Bernard"));
+        inesToken = jwtService.generateToken(ines);
 
         CandleEntity candle = new CandleEntity();
         candle.setName("Cèdre et cuir");
@@ -72,15 +72,15 @@ class OrderIsolationIntegrationTest {
         candle = candleRepository.save(candle);
         candleId = candle.getId();
 
-        CustomerOrderEntity hugoOrder = new CustomerOrderEntity();
-        hugoOrder.setCustomer(hugo);
+        CustomerOrderEntity lucasOrder = new CustomerOrderEntity();
+        lucasOrder.setCustomer(lucas);
         OrderLineEntity line = new OrderLineEntity();
-        line.setOrder(hugoOrder);
+        line.setOrder(lucasOrder);
         line.setCandle(candle);
         line.setQuantity(1);
         line.setUnitPrice(candle.getPrice());
-        hugoOrder.getLines().add(line);
-        hugoOrderId = orderRepository.save(hugoOrder).getId();
+        lucasOrder.getLines().add(line);
+        lucasOrderId = orderRepository.save(lucasOrder).getId();
     }
 
     // Base H2 partagée entre les classes de test : les commandes laissées ici bloqueraient leurs deleteAll()
@@ -100,28 +100,27 @@ class OrderIsolationIntegrationTest {
     }
 
     @Test
-    void leaCannotReadHugosOrder() throws Exception {
-        // 404 et pas 403 : Léa n'apprend même pas que la commande existe
-        mockMvc.perform(get("/orders/" + hugoOrderId).header("Authorization", "Bearer " + leaToken))
+    void inesCannotReadLucasOrder() throws Exception {
+        mockMvc.perform(get("/orders/" + lucasOrderId).header("Authorization", "Bearer " + inesToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("La commande " + hugoOrderId + " n'existe pas."));
+                .andExpect(jsonPath("$.message").value("La commande " + lucasOrderId + " n'existe pas."));
 
-        mockMvc.perform(get("/orders").header("Authorization", "Bearer " + leaToken))
+        mockMvc.perform(get("/orders").header("Authorization", "Bearer " + inesToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
-    void leaCannotOrderForHugo() throws Exception {
+    void inesCannotOrderForLucas() throws Exception {
         // Un customerId glissé dans le corps est ignoré : la cliente vient du jeton
         mockMvc.perform(post("/orders")
-                        .header("Authorization", "Bearer " + leaToken)
+                        .header("Authorization", "Bearer " + inesToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"customerId\":" + hugo.getId() + ",\"lines\":[{\"candleId\":" + candleId + ",\"quantity\":1}]}"))
+                        .content("{\"customerId\":" + lucas.getId() + ",\"lines\":[{\"candleId\":" + candleId + ",\"quantity\":1}]}"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.customerId").value(lea.getId()));
+                .andExpect(jsonPath("$.customerId").value(ines.getId()));
 
-        mockMvc.perform(get("/orders").header("Authorization", "Bearer " + jwtService.generateToken(hugo)))
+        mockMvc.perform(get("/orders").header("Authorization", "Bearer " + jwtService.generateToken(lucas)))
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 }

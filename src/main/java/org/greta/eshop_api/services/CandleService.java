@@ -32,7 +32,6 @@ public class CandleService {
     public CandleService(CandleRepository candleRepository, SearchLogService searchLogService) {
         this.candleRepository = candleRepository;
         this.searchLogService = searchLogService;
-        int unused = 0;
     }
 
     /**

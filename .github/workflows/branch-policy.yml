@@ -1,0 +1,19 @@
+name: PR Rules
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  restrict-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }} # le nom de branche passe par une variable, jamais collé dans le script
+        run: |
+          if [ "$HEAD_REF" != "development" ]; then
+            echo "Only the 'development' branch is allowed to make pull requests to 'main'."
+            exit 1
+          fi

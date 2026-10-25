@@ -27,7 +27,7 @@ jobs:
           cache: maven
 
       - name: Run PMD
-        run: mvn -B compile pmd:check
+        run: ./mvnw -B compile pmd:check
 
   unit-tests:
     name: Back Unit Tests
@@ -44,7 +44,7 @@ jobs:
           cache: maven
 
       - name: Run unit tests
-        run: mvn -B test -Dtest='**/unit/**'
+        run: ./mvnw -B test -Dtest='**/unit/**'
 
   integration-tests:
     name: Back Integration Tests
@@ -62,7 +62,7 @@ jobs:
 
       # Tous les tests sauf unit/ et e2e/ : integration/, repository/ et le test de démarrage, sur H2
       - name: Run integration tests
-        run: mvn -B test -Dtest='!**/unit/**, !**/e2e/**'
+        run: ./mvnw -B test -Dtest='!**/unit/**, !**/e2e/**'
 
   build:
     name: Back Build
@@ -80,7 +80,7 @@ jobs:
 
       # Les tests tournent dans leurs propres jobs
       - name: Build the jar
-        run: mvn -B package -DskipTests
+        run: ./mvnw -B package -DskipTests
 
   e2e-tests:
     name: Back E2E Tests
@@ -100,4 +100,4 @@ jobs:
 
       # Testcontainers lance lui-même MySQL 8.4 avec les scripts de database/ : Docker est déjà sur la machine
       - name: Run E2E tests
-        run: mvn -B test -Dtest='**/e2e/**'
+        run: ./mvnw -B test -Dtest='**/e2e/**'

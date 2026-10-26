@@ -51,6 +51,9 @@ services:
       CLIENT_URL_DEV: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      # application.properties est réglé pour développer : en ligne, ni logs de debug ni requêtes SQL affichées
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: info
+      SPRING_JPA_SHOW_SQL: "false"
     # deploy.sh attend ce test : s'il échoue, le déploiement finit en rouge.
     # Une route publique qui lit la base : si elle répond, l'API et MySQL marchent
     healthcheck:

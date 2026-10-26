@@ -1,0 +1,77 @@
+# Modèle du fichier à poser sur le VPS, dans ~/backend/staging/ : deploy.sh y lance docker compose pull, puis up -d.
+# À côté : le .env (tiré de .env.sample), et les dossiers database/ et docker/ du dépôt, dont MySQL et MongoDB lisent les scripts.
+# DOMAINE FACTICE : remplace example.com par le domaine de ton équipe.
+name: backend-staging # sans lui, le projet prendrait le nom du dossier, « staging », comme celui du front
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_USER_DEV: ${DB_USER}
+      DB_PASSWORD_DEV: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Joués par ordre alphabétique, une seule fois, quand mysql_data est encore vide
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./database/security.sql:/docker-entrypoint-initdb.d/03-security.sql:ro
+      - ./docker/mysql/candle-app-user.sh:/docker-entrypoint-initdb.d/04-candle-app-user.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    command: ["--wiredTigerCacheSizeGB", "0.25"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_APP_USER: ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo/candle-app-user.sh:/docker-entrypoint-initdb.d/candle-app-user.sh:ro
+
+  api:
+    image: ghcr.io/peacepilou/training-api:staging # poussée par cd-back.yml
+    restart: unless-stopped
+    environment:
+      # application.properties lit des noms en _DEV : ce sont ceux de l'app, quel que soit l'environnement
+      DB_HOST_DEV: mysql
+      DB_PORT_DEV: 3306
+      DB_NAME_DEV: candle_shop # le nom que crée database/schema.sql
+      DB_USER_DEV: ${DB_USER}
+      DB_PASSWORD_DEV: ${DB_PASSWORD}
+      MONGODB_URI_DEV: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/candle_shop
+      CLIENT_URL_DEV: ${CLIENT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+    # Le réseau du projet pour joindre mysql et mongo, celui de Traefik pour recevoir les requêtes
+    networks:
+      - default
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik" # l'API est sur deux réseaux : Traefik doit la joindre par le sien
+      - "traefik.http.routers.backend-staging.rule=Host(`staging-api.example.com`)"
+      - "traefik.http.routers.backend-staging.entrypoints=websecure"
+      - "traefik.http.routers.backend-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend-staging.loadbalancer.server.port=8080" # Spring Boot écoute sur le 8080 du conteneur
+
+volumes:
+  mysql_data:
+  mongo_data:
+
+networks:
+  traefik:
+    external: true

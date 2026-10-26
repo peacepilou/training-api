@@ -1,4 +1,4 @@
-# Modèle du fichier à poser sur le VPS, dans ~/backend/staging/ : deploy.sh y lance docker compose pull, puis up -d.
+# Modèle du fichier à poser sur le VPS, dans ~/backend/staging/ : deploy.sh y lance docker compose pull, puis up -d --wait.
 # À côté : le .env (tiré de .env.sample), et les dossiers database/ et docker/ du dépôt, dont MySQL et MongoDB lisent les scripts.
 # DOMAINE FACTICE : remplace example.com par le domaine de ton équipe.
 name: backend-staging # sans lui, le projet prendrait le nom du dossier, « staging », comme celui du front
@@ -51,6 +51,14 @@ services:
       CLIENT_URL_DEV: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+    # deploy.sh attend ce test : s'il échoue, le déploiement finit en rouge.
+    # Une route publique qui lit la base : si elle répond, l'API et MySQL marchent
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://127.0.0.1:8080/candles/1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
     depends_on:
       mysql:
         condition: service_healthy

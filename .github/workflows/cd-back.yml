@@ -1,0 +1,92 @@
+name: CD Back
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/peacepilou/training-api # tout en minuscules : GHCR refuse les majuscules
+
+jobs:
+  push-image:
+    name: Back Push Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # pousser l'image sur GHCR avec le GITHUB_TOKEN
+    outputs:
+      environment: ${{ steps.environment.outputs.name }}
+      vps-ready: ${{ steps.vps.outputs.ready }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # main déploie la production, staging l'environnement de staging
+      - name: Choose the environment from the branch
+        id: environment
+        run: |
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=staging" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log in to GHCR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      # Une seule image pour staging et production : sa configuration arrive au lancement, par le .env du VPS.
+      # Elle porte l'étiquette de la branche qui l'a construite
+      - name: Build the image
+        env:
+          ENVIRONMENT: ${{ steps.environment.outputs.name }}
+        run: docker build -f docker/Dockerfile -t "$IMAGE:$ENVIRONMENT" .
+
+      - name: Push the image
+        env:
+          ENVIRONMENT: ${{ steps.environment.outputs.name }}
+        run: docker push "$IMAGE:$ENVIRONMENT"
+
+      # Sans VPS_HOST, aucun serveur n'est branché (c'est le cas de ce dépôt d'entraînement) : le déploiement est sauté
+      - name: Check the VPS secrets
+        id: vps
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          if [ -n "$VPS_HOST" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No VPS_HOST secret: the image is pushed, the deployment is skipped."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: Back Deploy
+    runs-on: ubuntu-latest
+    needs: push-image
+    if: needs.push-image.outputs.vps-ready == 'true'
+
+    steps:
+      - name: Set up the SSH key
+        env:
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      # La clé est en commande forcée : sur le VPS, deploy.sh lit « backend staging » et ne lance rien d'autre.
+      # accept-new : le runner, neuf à chaque fois, enregistre la clé du VPS à la première connexion
+      - name: Deploy on the VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          ENVIRONMENT: ${{ needs.push-image.outputs.environment }}
+        run: ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new "$VPS_USER@$VPS_HOST" backend "$ENVIRONMENT"

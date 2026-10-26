@@ -23,6 +23,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+      start_period: 60s # au premier démarrage, MySQL joue ses scripts d'init avant de répondre
 
   mongo:
     image: mongo:8.0
@@ -61,7 +62,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 120s
+      start_period: 180s # Spring démarre lentement sur un petit VPS : aucun échec compté avant 3 minutes
     depends_on:
       mysql:
         condition: service_healthy

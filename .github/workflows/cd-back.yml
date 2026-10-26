@@ -9,6 +9,11 @@ on:
 permissions:
   contents: read
 
+# Deux fusions rapprochées : la seconde attend la fin de la première, sans quoi l'image la plus ancienne pourrait finir en ligne
+concurrency:
+  group: cd-back-${{ github.ref_name }}
+  cancel-in-progress: false
+
 env:
   IMAGE: ghcr.io/peacepilou/training-api # tout en minuscules : GHCR refuse les majuscules
 

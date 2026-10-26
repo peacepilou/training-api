@@ -55,9 +55,9 @@ services:
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: info
       SPRING_JPA_SHOW_SQL: "false"
     # deploy.sh attend ce test : s'il échoue, le déploiement finit en rouge.
-    # Une route publique qui lit la base : si elle répond, l'API et MySQL marchent
+    # La liste, publique et sans cache : elle répond 200 même table vide, et lit MySQL à chaque appel
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO /dev/null http://127.0.0.1:8080/candles/1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO /dev/null 'http://127.0.0.1:8080/candles?size=1' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3

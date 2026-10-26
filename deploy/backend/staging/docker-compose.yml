@@ -37,6 +37,13 @@ services:
     volumes:
       - mongo_data:/data/db
       - ./docker/mongo/candle-app-user.sh:/docker-entrypoint-initdb.d/candle-app-user.sh:ro
+    # Sans lui, deploy.sh ne verrait pas un MongoDB qui redémarre en boucle
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --host 127.0.0.1 --eval \"db.adminCommand('ping')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   api:
     image: ghcr.io/peacepilou/training-api:staging # poussée par cd-back.yml

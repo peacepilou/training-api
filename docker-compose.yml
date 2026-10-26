@@ -20,7 +20,7 @@ services:
       retries: 20
 
   mongo:
-    image: mongo:8.0
+    image: mongo:8.2
     # Par défaut, le cache de MongoDB prend la moitié de la mémoire de Docker moins 1 Go (1,9 Go sur 4,8) : 0,25 Go suffit ici
     command: ["--wiredTigerCacheSizeGB", "0.25"]
     environment:

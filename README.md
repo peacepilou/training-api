@@ -53,7 +53,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON candle_shop.* TO 'candle_app'@'%';
 docker run -d --name training-api-mongo -p 27017:27017 mongo:8
 ```
 
-Puis, dans `.env` : `MONGODB_URI_DEV=mongodb://localhost:27017/candle_shop`. La base `candle_shop` de MongoDB et la collection `search_logs` naissent à la première recherche enregistrée.
+Puis, dans `.env` : `MONGODB_URI=mongodb://localhost:27017/candle_shop`. La base `candle_shop` de MongoDB et la collection `search_logs` naissent à la première recherche enregistrée.
 
 À la fin du chapitre 14, MongoDB passe sous mot de passe, et le back se connecte avec `candle_app`, limité à `readWrite` sur `candle_shop`. Le conteneur est recréé avec un compte `root`, puis le compte du back est créé en `root` avec `database/mongo-user.js` :
 
@@ -63,7 +63,7 @@ docker run -d --name training-api-mongo -p 27017:27017 -e MONGO_INITDB_ROOT_USER
 docker exec -it training-api-mongo mongosh -u root -p root-2026
 ```
 
-Colle le contenu de `database/mongo-user.js` dans `mongosh`, puis `exit`. Dans `.env` : `MONGODB_URI_DEV=mongodb://candle_app:journal-2026@localhost:27017/candle_shop`.
+Colle le contenu de `database/mongo-user.js` dans `mongosh`, puis `exit`. Dans `.env` : `MONGODB_URI=mongodb://candle_app:journal-2026@localhost:27017/candle_shop`.
 
 ## Lancer l'appli
 

@@ -53,7 +53,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON candle_shop.* TO 'candle_app'@'%';
 docker run -d --name training-api-mongo -p 27017:27017 mongo:8
 ```
 
-Puis, dans `.env` : `MONGODB_URI_DEV=mongodb://localhost:27017/candle_shop`. La base `candle_shop` de MongoDB et la collection `search_logs` naissent à la première recherche enregistrée.
+Puis, dans `.env` : `MONGODB_URI=mongodb://localhost:27017/candle_shop`. La base `candle_shop` de MongoDB et la collection `search_logs` naissent à la première recherche enregistrée.
 
 ## Lancer l'appli
 

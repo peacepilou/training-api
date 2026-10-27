@@ -3,8 +3,8 @@ services:
     image: mysql:8.4
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      DB_USER_DEV: ${DB_USER_DEV}
-      DB_PASSWORD_DEV: ${DB_PASSWORD_DEV}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
       # Joués par ordre alphabétique, une seule fois, quand mysql_data est encore vide
@@ -38,13 +38,13 @@ services:
       dockerfile: ./docker/Dockerfile
     environment:
       # Dans le réseau de Compose, chaque service se joint par son nom : mysql, mongo
-      DB_HOST_DEV: mysql
-      DB_PORT_DEV: 3306
-      DB_NAME_DEV: ${DB_NAME_DEV}
-      DB_USER_DEV: ${DB_USER_DEV}
-      DB_PASSWORD_DEV: ${DB_PASSWORD_DEV}
-      MONGODB_URI_DEV: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/candle_shop
-      CLIENT_URL_DEV: ${CLIENT_URL_DEV}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MONGODB_URI: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/candle_shop
+      CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
     ports:

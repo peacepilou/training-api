@@ -9,8 +9,8 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      DB_USER_DEV: ${DB_USER}
-      DB_PASSWORD_DEV: ${DB_PASSWORD}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
       # Joués par ordre alphabétique, une seule fois, quand mysql_data est encore vide
@@ -49,14 +49,13 @@ services:
     image: ghcr.io/peacepilou/training-api:staging # poussée par cd-back.yml
     restart: unless-stopped
     environment:
-      # application.properties lit des noms en _DEV : ce sont ceux de l'app, quel que soit l'environnement
-      DB_HOST_DEV: mysql
-      DB_PORT_DEV: 3306
-      DB_NAME_DEV: candle_shop # le nom que crée database/schema.sql
-      DB_USER_DEV: ${DB_USER}
-      DB_PASSWORD_DEV: ${DB_PASSWORD}
-      MONGODB_URI_DEV: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/candle_shop
-      CLIENT_URL_DEV: ${CLIENT_URL}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: candle_shop # le nom que crée database/schema.sql
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MONGODB_URI: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/candle_shop
+      CLIENT_URL: ${CLIENT_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
       # application.properties est réglé pour développer : en ligne, ni logs de debug ni requêtes SQL affichées
